@@ -66,6 +66,54 @@ class TaskController {
     return res.json(tasks);
   }
 
+  async show(req, res) {
+    const { id } = req.params;
+
+    const task = await Task.findByPk(id, {
+      attributes: [
+        'id',
+        'created_at',
+        'title',
+        'description',
+        'status',
+        'start_date',
+        'end_date',
+      ],
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email'],
+          include: [
+            {
+              model: File,
+              as: 'avatar',
+              attributes: ['id', 'url', 'path'],
+            },
+          ],
+        },
+      ],
+      include: [
+        {
+          model: User,
+          as: 'responsible',
+          attributes: ['id', 'name', 'email'],
+          include: [
+            {
+              model: File,
+              as: 'avatar',
+              attributes: ['id', 'url', 'path'],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!task) return res.status(400).json({ error: 'Task does not exists' });
+
+    return res.json(task);
+  }
+
   async update(req, res) {
     const schema = Yup.object().shape({
       title: Yup.string().required(),
